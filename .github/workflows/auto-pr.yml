@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -14,17 +14,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: ${{ github.ref_name }}
-          title: "Auto PR: ${{ github.ref_name }}"
-          body: |
-            PR criado automaticamente após push na branch **${{ github.ref_name }}**.
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
 
-            🔒 **Nenhuma ação automática de merge ou aprovação.**
-            ✔️ Revisão e merge são manuais.
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`,
+              base: 'main',
+              state: 'open'
+            });
+
+            if (pulls.length > 0) {
+              console.log('PR already exists. Skipping.');
+              return;
+            }
+
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Auto PR: ${branch}`,
+              head: branch,
+              base: 'main',
+              body: `PR criado automaticamente após push na branch **${branch}**.\n\nRevisão e merge são manuais.`
+            });
+
+            console.log('PR created successfully.');
