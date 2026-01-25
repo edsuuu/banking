@@ -98,7 +98,7 @@
                         <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Webhooks</h2>
                         <p class="text-slate-400 mt-1 font-medium">Gerencie o recebimento de notificações em tempo real para sua aplicação.</p>
                     </div>
-                    <button class="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-pill font-bold shadow-lg shadow-blue-500/30 hover:scale-105 transition-all text-sm">
+                    <button wire:click="$dispatch('openModal', { component: 'webhooks.create' })" class="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-pill font-bold shadow-lg shadow-blue-500/30 hover:scale-105 transition-all text-sm">
                         <span class="material-symbols-outlined text-lg">add</span>
                         Novo Webhook
                     </button>
@@ -159,10 +159,10 @@
                                         <p class="text-xs font-bold text-slate-800">há 2 min</p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <button class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm">
+                                        <button wire:click="$dispatch('openModal', { component: 'webhooks.edit', params: { id: 1 } })" class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm">
                                             <span class="material-symbols-outlined text-xl">settings</span>
                                         </button>
-                                        <button class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-red-400 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm">
+                                        <button wire:click="$dispatch('openModal', { component: 'webhooks.delete', params: { id: 1 } })" class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-red-400 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm">
                                             <span class="material-symbols-outlined text-xl">delete</span>
                                         </button>
                                     </div>
@@ -190,10 +190,10 @@
                                         <p class="text-xs font-bold text-slate-800">Ontem, 14:00</p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <button class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm">
+                                        <button wire:click="$dispatch('openModal', { component: 'webhooks.edit', params: { id: 2 } })" class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary transition-all shadow-sm">
                                             <span class="material-symbols-outlined text-xl">settings</span>
                                         </button>
-                                        <button class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-red-400 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm">
+                                        <button wire:click="$dispatch('openModal', { component: 'webhooks.delete', params: { id: 2 } })" class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-red-400 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm">
                                             <span class="material-symbols-outlined text-xl">delete</span>
                                         </button>
                                     </div>

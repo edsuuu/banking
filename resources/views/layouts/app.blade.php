@@ -166,7 +166,10 @@
 
 {{ $slot }}
 
-@livewireScripts
+
+    <livewire:global-modal />
+
+    @livewireScripts
 @fluxScripts
 </body>
 </html>
