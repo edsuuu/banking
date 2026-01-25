@@ -4,101 +4,184 @@ namespace App\Http\Controllers;
 
 use App\Livewire\Actions\Logout;
 use App\Models\User;
-use App\Models\UserSpotify;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function spotifyAuth()
-    {
-        return Socialite::driver('spotify')
-            ->scopes([
-                'user-read-playback-state',
-                'user-modify-playback-state',
-                'user-read-currently-playing',
-                'playlist-read-private',
-                'playlist-read-collaborative',
-                'playlist-modify-private',
-                'playlist-modify-public',
-                'user-read-playback-position',
-                'user-top-read',
-                'user-read-recently-played',
-                'user-read-email',
-                'user-library-read',
-                'user-read-private',
-            ])
-            ->redirect();
-    }
-
-    public function spotifyCallback()
+    /**
+     * Redirect to Google for authentication.
+     */
+    public function googleRedirect()
     {
         try {
-            $spotifyUser = Socialite::driver('spotify')
-                ->stateless()
-                ->user();
-
-            DB::beginTransaction();
-
-            $userDB = User::query()
-                ->with('spotify')
-                ->where('email', $spotifyUser->user['email'])
-                ->where('spotify_id', $spotifyUser->user['id'])
-                ->first();
-
-            if (!isset($userDB)) {
-                $userCreate = User::query()->create([
-                    'name' => $spotifyUser->user['display_name'],
-                    'email' =>  $spotifyUser->user['email'],
-                    'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(16)),
-                    'spotify_id' => $spotifyUser->user['id'],
-                ]);
-
-                UserSpotify::query()->create([
-                    'user_id' => $userCreate->id,
-                    'external_urls' => $spotifyUser->user['external_urls']['spotify'],
-                    'href_profile' => $spotifyUser->user['href'],
-                    'product' => $spotifyUser->user['product'],
-                    'avatar' => !empty($spotifyUser->user['images']) ? $spotifyUser->user['images'][0]['url'] : null,
-                    'token' => $spotifyUser->token,
-                    'refresh_token' => $spotifyUser->refreshToken,
-                    'expires_token' => now()->addSeconds($spotifyUser->expiresIn),
-                    'country' => $spotifyUser->user['country'],
-                ]);
-
-                Auth::loginUsingId($userCreate->id, true);
-            } else {
-                UserSpotify::query()
-                    ->where('user_id', $userDB->id)
-                    ->update([
-                        'avatar' =>  !empty($spotifyUser->user['images']) ? $spotifyUser->user['images'][0]['url'] : null,
-                        'product' => $spotifyUser->user['product'],
-                        'token' => $spotifyUser->token,
-                        'refresh_token' => $spotifyUser->refreshToken,
-                        'expires_token' => now()->addSeconds($spotifyUser->expiresIn),
-                    ]);
-
-                Auth::login($userDB);
-            }
-
-            DB::commit();
-            session()->regenerate();
-            return redirect()->route('dashboard');
+            return Socialite::driver('google')->redirect();
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::channel('daily')->error($e);
-            return redirect('/')->with('error', 'Erro ao autenticar com o Spotify. Tente novamente.');
+            Log::channel('auth')->error('Google Redirect Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+            return redirect()->route('login')->withErrors(['error' => 'Não foi possível redirecionar para o Google.']);
         }
     }
 
+    /**
+     * Handle the Google callback.
+     */
+    public function googleCallback(Request $request): RedirectResponse
+    {
+        try {
+            $googleUser = Socialite::driver('google')
+                ->user();
+
+            // Case 1: User is already logged in and confirming identity (Secure Area / Sudo Mode)
+            if (Auth::check()) {
+                $user = Auth::user();
+                
+                Log::channel('auth')->info('Google Sudo Mode Attempt', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'google_email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId()
+                ]);
+
+                if ($user->email === $googleUser->getEmail() || ($user->google_id && $user->google_id === $googleUser->getId())) {
+                    session(['auth.password_confirmed_at' => time()]);
+                    
+                    if (empty($user->google_id)) {
+                        $user->update(['google_id' => $googleUser->getId()]);
+                    }
+
+                    Log::channel('auth')->info('Google Sudo Mode Success', ['user_id' => $user->id]);
+
+                    return redirect()->intended(route('settings.index'));
+                }
+                
+                Log::channel('auth')->warning('Google Sudo Mode Mismatch', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'google_email' => $googleUser->getEmail()
+                ]);
+
+                return redirect()->route('settings.index')->withErrors(['error' => 'A conta Google informada não coincide com seu usuário logado.']);
+            }
+
+            // Case 2: Regular Login Flow
+            $user = User::query()
+                ->where('email', $googleUser->getEmail())
+                ->orWhere('google_id', $googleUser->getId())
+                ->first();
+
+            if ($user) {
+                // Update google_id if not set
+                if (empty($user->google_id)) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                }
+
+                // Check for 2FA
+                if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+                    session([
+                        'login.id' => $user->getKey(),
+                        'login.remember' => true,
+                        'login.expires_at' => now()->addMinutes(15)->timestamp,
+                    ]);
+
+                    return redirect()->route('two-factor.login');
+                }
+
+                // Check if user has business
+                if ($user->business_id) {
+                    Auth::login($user, true);
+                    return redirect()->intended(route('dashboard'));
+                }
+                
+                // Fallback to register if no business linked
+                session([
+                    'social_user' => [
+                        'google_id' => $googleUser->getId(),
+                        'name' => $googleUser->getName(),
+                        'email' => $googleUser->getEmail(),
+                        'provider' => 'google',
+                    ]
+                ]);
+                return redirect()->route('register');
+            }
+
+            // Case 3: New User / Registration
+            session([
+                'social_user' => [
+                    'google_id' => $googleUser->getId(),
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'provider' => 'google',
+                ]
+            ]);
+
+            return redirect()->route('register');
+
+        } catch (\Exception $e) {
+            Log::channel('auth')->error('Google Auth Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('login')->withErrors(['error' => 'Falha na autenticação com o Google. Tente novamente.']);
+        }
+    }
+
+    /**
+     * Confirm identity using 2FA code for Sudo Mode (Secure Area).
+     */
+    public function confirmSudo2FA(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+
+        $action = app(ConfirmTwoFactorAuthentication::class);
+
+        try {
+            $action($user, $request->code);
+
+            if ($user->two_factor_confirmed_at) {
+                session(['auth.password_confirmed_at' => time()]);
+
+                Log::channel('daily')->info('Sudo Mode: 2FA Confirmed', [
+                    'user_id' => $user->id,
+                    'ip' => $request->ip()
+                ]);
+
+                return redirect()->intended(route('settings.index'));
+            }
+        } catch (\Exception $e) {
+            Log::channel('daily')->error('Sudo Mode: 2FA Confirmation Error', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+                'ip' => $request->ip()
+            ]);
+        }
+
+        return redirect()->back()->withErrors(['code' => 'O código de autenticação informado é inválido.']);
+    }
+
+    /**
+     * Logout the user.
+     */
     public function logout(Logout $logout)
     {
-        $logout();
+        try {
+            $logout();
+        } catch (\Exception $e) {
+            Log::channel('auth')->error('Logout Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        }
+        
         return redirect('/');
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -40,16 +43,46 @@ class Login extends Component
 
         $this->validate();
 
-        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
-            $this->addError('email', trans('auth.failed'));
+        try {
+            $user = User::where('email', $this->email)->first();
 
-            return;
+            if (! $user || ! Hash::check($this->password, $user->password)) {
+                RateLimiter::hit($this->throttleKey());
+                $this->addError('email', trans('auth.failed'));
+
+                Log::channel('auth')->warning('Login attempt failed', [
+                    'email' => $this->email,
+                    'ip' => request()->ip()
+                ]);
+
+                return;
+            }
+
+            // Check if user has 2FA enabled
+            if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+                session([
+                    'login.id' => $user->getKey(),
+                    'login.remember' => $this->remember,
+                    'login.expires_at' => now()->addMinutes(15)->timestamp,
+                ]);
+
+                return redirect()->route('two-factor.login');
+            }
+
+            Auth::login($user, $this->remember);
+
+            RateLimiter::clear($this->throttleKey());
+
+            return redirect()->intended(route('dashboard'));
+
+        } catch (\Exception $e) {
+            Log::channel('auth')->error('Login Authentication Error: ' . $e->getMessage(), [
+                'email' => $this->email,
+                'exception' => $e
+            ]);
+
+            $this->addError('email', 'Ocorreu um erro ao tentar entrar. Por favor, tente novamente.');
         }
-
-        RateLimiter::clear($this->throttleKey());
-
-        return redirect()->intended(route('dashboard'));
     }
 
     protected function ensureIsNotRateLimited(): void
@@ -59,6 +92,11 @@ class Login extends Component
         }
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        Log::channel('auth')->notice('Login rate limit reached', [
+            'email' => $this->email,
+            'ip' => request()->ip()
+        ]);
 
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [

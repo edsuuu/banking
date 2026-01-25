@@ -17,6 +17,7 @@
     --color-dark: #0f172a;
     --color-background-light: #f0f4f8;
     --color-card-light: #ffffff;
+    --color-danger: #ef4444;
 
     --radius-xl: 1.5rem;
     --radius-2xl: 2rem;
@@ -130,5 +131,79 @@
 
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
+    }
+
+    .tab-active {
+        color: var(--color-primary);
+        border-bottom-width: 2px;
+        border-color: var(--color-primary);
+    }
+
+    .switch {
+        display: inline-flex;
+        align-items: center;
+        height: 1.5rem;
+        /* h-6 */
+        width: 2.75rem;
+        /* w-11 */
+        border-radius: 9999px;
+        /* rounded-full */
+        position: relative;
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    .switch:focus {
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+        --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+        --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+        box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+        --tw-ring-color: var(--color-primary);
+        --tw-ring-offset-width: 2px;
+    }
+
+    .switch-on {
+        background-color: var(--color-primary);
+    }
+
+    .switch-off {
+        background-color: #e2e8f0;
+        /* bg-slate-200 */
+    }
+
+    .switch-handle {
+        display: inline-block;
+        height: 1rem;
+        /* h-4 */
+        width: 1rem;
+        /* w-4 */
+        transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-rotate)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+        border-radius: 9999px;
+        /* rounded-full */
+        background-color: #ffffff;
+        transition-property: transform;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    .switch-handle-on {
+        --tw-translate-x: 1.5rem;
+        /* translate-x-6 */
+    }
+
+    .switch-handle-off {
+        --tw-translate-x: 0.25rem;
+        /* translate-x-1 */
+    }
+
+    .card-plan-shadow {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    }
+
+    .modal-overlay {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
     }
 }
