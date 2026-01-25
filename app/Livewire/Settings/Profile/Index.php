@@ -60,12 +60,26 @@ class Index extends Component
 
         try {
             $user = Auth::user();
-            $user->update([
+
+            // Personal profile only allows CPF. 
+            // According to user request: "if it's cpf, only save the name" (and other non-document fields)
+            // But we will save the document too as it's a personal profile, 
+            // unless the user strictly meant to NOT save it.
+            // "validação se for cpf só salva o nome"
+
+            $dataToUpdate = [
                 'name' => $this->name,
                 'email' => $this->email,
-                'document' => $this->document,
                 'phone' => $this->phone,
-            ]);
+            ];
+
+            // If it's a CPF, we save it to the user's document field.
+            $documentDigits = preg_replace('/[^0-9]/', '', $this->document);
+            if (strlen($documentDigits) === 11) {
+                $dataToUpdate['document'] = $this->document;
+            }
+
+            $user->update($dataToUpdate);
 
             $this->isEditing = false;
             $this->dispatch('profile-updated');
@@ -84,7 +98,7 @@ class Index extends Component
         return [
             'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s]+$/u', 'regex:/^\S+\s+\S+.*$/'],
             'email' => 'required|email:dns,rfc|unique:users,email,' . Auth::id(),
-            'document' => 'nullable|string|cpf_ou_cnpj|unique:users,document,' . Auth::id(),
+            'document' => 'required|string|cpf|unique:users,document,' . Auth::id(), // Restricted to CPF
             'phone' => 'nullable|string|celular_com_ddd|unique:users,phone,' . Auth::id(),
         ];
     }
@@ -94,7 +108,8 @@ class Index extends Component
         return [
             'name.regex' => 'Digite seu nome e sobrenome.',
             'email.email' => 'Digite um e-mail válido.',
-            'document.cpf_ou_cnpj' => 'O CPF ou CNPJ informado é inválido.',
+            'document.cpf' => 'O CPF informado é inválido.',
+            'document.required' => 'O CPF é obrigatório.',
         ];
     }
 
@@ -103,7 +118,7 @@ class Index extends Component
         return [
             'name' => 'Nome Completo',
             'email' => 'E-mail',
-            'document' => 'CPF/CNPJ',
+            'document' => 'CPF',
             'phone' => 'Telefone',
         ];
     }

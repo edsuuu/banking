@@ -30,13 +30,45 @@ class AuthController extends Controller
     /**
      * Handle the Google callback.
      */
-    public function googleCallback(): RedirectResponse
+    public function googleCallback(Request $request): RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')
-                ->stateless()
                 ->user();
 
+            // Case 1: User is already logged in and confirming identity (Secure Area / Sudo Mode)
+            if (Auth::check()) {
+                $user = Auth::user();
+                
+                Log::channel('auth')->info('Google Sudo Mode Attempt', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'google_email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId()
+                ]);
+
+                if ($user->email === $googleUser->getEmail() || ($user->google_id && $user->google_id === $googleUser->getId())) {
+                    session(['auth.password_confirmed_at' => time()]);
+                    
+                    if (empty($user->google_id)) {
+                        $user->update(['google_id' => $googleUser->getId()]);
+                    }
+
+                    Log::channel('auth')->info('Google Sudo Mode Success', ['user_id' => $user->id]);
+
+                    return redirect()->intended(route('settings.index'));
+                }
+                
+                Log::channel('auth')->warning('Google Sudo Mode Mismatch', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'google_email' => $googleUser->getEmail()
+                ]);
+
+                return redirect()->route('settings.index')->withErrors(['error' => 'A conta Google informada não coincide com seu usuário logado.']);
+            }
+
+            // Case 2: Regular Login Flow
             $user = User::query()
                 ->where('email', $googleUser->getEmail())
                 ->orWhere('google_id', $googleUser->getId())
@@ -46,6 +78,17 @@ class AuthController extends Controller
                 // Update google_id if not set
                 if (empty($user->google_id)) {
                     $user->update(['google_id' => $googleUser->getId()]);
+                }
+
+                // Check for 2FA
+                if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+                    session([
+                        'login.id' => $user->getKey(),
+                        'login.remember' => true,
+                        'login.expires_at' => now()->addMinutes(15)->timestamp,
+                    ]);
+
+                    return redirect()->route('two-factor.login');
                 }
 
                 // Check if user has business
@@ -66,7 +109,7 @@ class AuthController extends Controller
                 return redirect()->route('register');
             }
 
-            // Redirect to register with google data if user doesn't exist
+            // Case 3: New User / Registration
             session([
                 'social_user' => [
                     'google_id' => $googleUser->getId(),
@@ -86,6 +129,33 @@ class AuthController extends Controller
             
             return redirect()->route('login')->withErrors(['error' => 'Falha na autenticação com o Google. Tente novamente.']);
         }
+    }
+
+    /**
+     * Confirm identity using 2FA code for Sudo Mode (Secure Area).
+     */
+    public function confirmSudo2FA(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+
+        $action = app(\Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication::class);
+
+        try {
+            $action($user, $request->code);
+
+            if ($user->two_factor_confirmed_at) {
+                session(['auth.password_confirmed_at' => time()]);
+                return redirect()->intended(route('settings.index'));
+            }
+        } catch (\Exception $e) {
+            // Fortify's action might throw exceptions on invalid code
+        }
+
+        return redirect()->back()->withErrors(['code' => 'O código de autenticação informado é inválido.']);
     }
 
     /**

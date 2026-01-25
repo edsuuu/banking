@@ -99,21 +99,19 @@ class Index extends Component
             $user = Auth::user();
             
             $business = $user->business;
+            
+            $businessData = [
+                'tax_id' => $this->tax_id,
+                'company_type' => $this->company_type,
+                'legal_name' => $this->legal_name,
+                'trading_name' => $this->trading_name,
+            ];
+
             if (!$business) {
-                $business = Business::query()->create([
-                    'tax_id' => $this->tax_id,
-                    'company_type' => $this->company_type,
-                    'legal_name' => $this->legal_name,
-                    'trading_name' => $this->trading_name,
-                ]);
+                $business = Business::query()->create($businessData);
                 $user->update(['business_id' => $business->id]);
             } else {
-                $business->update([
-                    'tax_id' => $this->tax_id,
-                    'company_type' => $this->company_type,
-                    'legal_name' => $this->legal_name,
-                    'trading_name' => $this->trading_name,
-                ]);
+                $business->update($businessData);
             }
 
             $address = $business->primaryAddress;
@@ -159,7 +157,7 @@ class Index extends Component
     protected function rules()
     {
         return [
-            'tax_id' => 'required|string|cpf_ou_cnpj',
+            'tax_id' => 'required|string|cnpj', // Restricted to CNPJ
             'legal_name' => 'required|string|max:255',
             'trading_name' => 'required|string|max:255',
             'zip_code' => 'required|string',
@@ -170,10 +168,18 @@ class Index extends Component
         ];
     }
 
+    protected function messages()
+    {
+        return [
+            'tax_id.cnpj' => 'O CNPJ informado é inválido.',
+            'tax_id.required' => 'O CNPJ é obrigatório.',
+        ];
+    }
+
     protected function validationAttributes()
     {
         return [
-            'tax_id' => 'CNPJ/CPF',
+            'tax_id' => 'CNPJ',
             'legal_name' => 'Razão Social',
             'trading_name' => 'Nome Fantasia',
             'zip_code' => 'CEP',

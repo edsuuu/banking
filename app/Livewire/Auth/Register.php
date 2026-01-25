@@ -42,7 +42,7 @@ class Register extends Component
         $rules = [
             'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s]+$/u', 'regex:/^\S+\s+\S+.*$/'],
             'email' => 'required|email:dns,rfc|max:255|unique:users,email' . ($this->isSocial ? ',' . ($this->getExistingUserId() ?: 'NULL') : ''),
-            'document' => 'required|string|cpf_ou_cnpj|unique:users,document' . ($this->isSocial ? ',' . ($this->getExistingUserId() ?: 'NULL') : '') . '|unique:businesses,tax_id',
+            'document' => 'required|string|cpf_ou_cnpj|unique:users,document' . ($this->isSocial ? ',' . ($this->getExistingUserId() ?: 'NULL') : ''),
             'phone' => 'required|string|celular_com_ddd|unique:users,phone' . ($this->isSocial ? ',' . ($this->getExistingUserId() ?: 'NULL') : ''),
             'terms' => 'accepted',
         ];
@@ -102,12 +102,23 @@ class Register extends Component
             // Get default plan
             $plan = Plan::query()->where('slug', 'starter')->first();
 
-            // Create Business first
-            $business = Business::query()->create([
-                'tax_id' => $this->document,
+            // Check if document is CNPJ or CPF
+            $documentDigits = preg_replace('/[^0-9]/', '', $this->document);
+            $isCnpj = strlen($documentDigits) === 14;
+
+            // Create Business
+            $businessData = [
                 'plan_id' => $plan?->id,
                 'trading_name' => explode(' ', $this->name)[0] . ' Business',
-            ]);
+            ];
+
+            // Only save document to business if it's a CNPJ
+            if ($isCnpj) {
+                $businessData['tax_id'] = $this->document;
+                $businessData['legal_name'] = $this->name;
+            }
+
+            $business = Business::query()->create($businessData);
 
             // Prepare User Data
             $userData = [

@@ -35,8 +35,8 @@
                     @error('email') <span class="text-red-500 text-[10px] font-bold ml-1">{{ $message }}</span> @enderror
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">CPF / CNPJ</label>
-                    <input wire:model="document" x-mask:dynamic="$input.length > 14 ? '99.999.999/9999-99' : '999.999.999-99'" :disabled="!isEditing" :class="!isEditing ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'" class="w-full border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-primary focus:border-primary transition-all" type="text"/>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">CPF</label>
+                    <input wire:model="document" x-mask="999.999.999-99" :disabled="!isEditing" :class="!isEditing ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'" class="w-full border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-primary focus:border-primary transition-all" type="text"/>
                     @error('document') <span class="text-red-500 text-[10px] font-bold ml-1">{{ $message }}</span> @enderror
                 </div>
                 <div class="space-y-2">
@@ -100,33 +100,13 @@
                 </button>
                 <button wire:click="$parent.setTab('security', 'sessions')" class="w-full py-4 bg-white rounded-pill text-xs font-bold shadow-sm border border-slate-100 hover:border-primary hover:text-primary transition-all flex items-center px-6 gap-4 group">
                     <span class="material-symbols-outlined text-primary text-lg group-hover:scale-110 transition-transform">vibration</span>
-                    <span>Ativar 2FA</span>
+                    <span>{{ auth()->user()->two_factor_confirmed_at ? 'Gerenciar 2FA' : 'Ativar 2FA' }}</span>
                 </button>
                 <button wire:click="$parent.setTab('security', 'sessions')" class="w-full py-4 bg-white rounded-pill text-xs font-bold shadow-sm border border-slate-100 hover:border-primary hover:text-primary transition-all flex items-center px-6 gap-4 group">
                     <span class="material-symbols-outlined text-primary text-lg group-hover:scale-110 transition-transform">devices</span>
                     <span>Sessões Ativas</span>
                 </button>
             </div>
-        </div>
-        <div class="bg-gradient-to-br from-primary to-blue-400 rounded-5xl p-8 text-white relative overflow-hidden group">
-            <div class="relative z-10">
-                <div class="bg-white/20 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider w-fit mb-4">
-                    Conta Premium
-                </div>
-                <h4 class="text-xl font-bold mb-2">FinPay Plus</h4>
-                <p class="text-xs text-white/80 mb-6 leading-relaxed">Você está aproveitando o melhor que a nossa plataforma oferece.</p>
-                <div class="flex items-center gap-2 mb-4">
-                    <span class="material-symbols-outlined text-sm">check_circle</span>
-                    <span class="text-[10px] font-bold">Taxa reduzida (1.5%)</span>
-                </div>
-                <button wire:click="$parent.setTab('plans')" class="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-pill font-bold text-xs w-full hover:bg-white/30 transition-all">
-                    Gerenciar Plano
-                </button>
-            </div>
-            <span class="material-symbols-outlined absolute -bottom-6 -right-6 text-[10rem] text-white/10 rotate-12 group-hover:scale-110 transition-transform pointer-events-none">auto_awesome</span>
-        </div>
-        <div class="px-6 text-center">
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2024 FinPay Blue</p>
         </div>
     </div>
 </div>

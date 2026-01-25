@@ -22,7 +22,7 @@
                 <label class="block text-sm font-bold text-slate-700 mb-2 ml-2">Nome Completo</label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-400">person</span>
-                    <input wire:model="name" class="form-input-custom pl-14 @error('name') error @enderror" placeholder="Ex: João Silva" type="text" {{ $isSocial ? 'readonly' : '' }}/>
+                    <input wire:model="name" class="form-input-custom pl-14 @error('name') error @enderror" placeholder="Ex: João Silva" type="text"/>
                 </div>
                 @error('name') <span class="text-red-500 text-xs mt-1 ml-2 font-bold">{{ $message }}</span> @enderror
             </div>
@@ -114,9 +114,9 @@
 
     @if(!$isSocial)
         <div class="relative flex items-center gap-4 my-8">
-            <div class="flex-grow border-t border-slate-100"></div>
+            <div class="grow border-t border-slate-100"></div>
             <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">ou</span>
-            <div class="flex-grow border-t border-slate-100"></div>
+            <div class="grow border-t border-slate-100"></div>
         </div>
 
         <a href="{{ route('google.redirect') }}" class="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-4 rounded-2xl font-bold text-base transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">

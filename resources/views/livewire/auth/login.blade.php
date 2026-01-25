@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex items-center gap-3 mb-2 ml-1">
-            <input wire:model="remember" class=" rounded-md border-slate-300 text-primary focus:ring-primary/20" id="remember" type="checkbox"/>
+            <input wire:model="remember" class="w-4 h-4 rounded-md border-slate-300 bg-white text-primary focus:ring-primary/20 cursor-pointer shadow-sm transition-all" id="remember" type="checkbox"/>
             <label class="text-sm font-medium text-slate-600 cursor-pointer" for="remember">Lembrar de mim</label>
         </div>
 

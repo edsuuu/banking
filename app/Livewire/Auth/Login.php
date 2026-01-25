@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
@@ -42,7 +43,9 @@ class Login extends Component
         $this->validate();
 
         try {
-            if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            $user = User::where('email', $this->email)->first();
+
+            if (! $user || ! \Illuminate\Support\Facades\Hash::check($this->password, $user->password)) {
                 RateLimiter::hit($this->throttleKey());
                 $this->addError('email', trans('auth.failed'));
 
@@ -53,6 +56,19 @@ class Login extends Component
 
                 return;
             }
+
+            // Check if user has 2FA enabled
+            if ($user->two_factor_secret && $user->two_factor_confirmed_at) {
+                session([
+                    'login.id' => $user->getKey(),
+                    'login.remember' => $this->remember,
+                    'login.expires_at' => now()->addMinutes(15)->timestamp,
+                ]);
+
+                return redirect()->route('two-factor.login');
+            }
+
+            Auth::login($user, $this->remember);
 
             RateLimiter::clear($this->throttleKey());
 

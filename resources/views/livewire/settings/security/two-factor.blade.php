@@ -1,73 +1,95 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
-    <div class="bg-white w-full max-w-xl rounded-5xl shadow-[0_32px_64px_-12px_rgba(29,78,216,0.15)] overflow-hidden border border-white">
-        <div class="px-10 pt-10 pb-6 flex items-center justify-between">
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay overflow-y-auto">
+    <div class="bg-white w-full max-w-xl rounded-4xl shadow-2xl overflow-hidden border border-slate-100 my-auto">
+        <div class="px-8 pt-8 pb-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-blue-50 text-primary rounded-2xl flex items-center justify-center">
                     <span class="material-symbols-outlined fill-icon text-2xl">verified_user</span>
                 </div>
                 <div>
-                    <h3 class="text-2xl font-extrabold text-slate-800">Ativar 2FA</h3>
-                    <p class="text-sm text-slate-400 font-medium">Autenticação em duas etapas</p>
+                    <h3 class="text-xl font-black text-slate-800">Autenticação 2FA</h3>
+                    <p class="text-xs text-slate-400 font-medium">Camada extra de segurança</p>
                 </div>
             </div>
-            <button wire:click="$parent.closeTwoFactorModal" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400">
+            <button wire:click="close" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors text-slate-400">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-        <div class="px-10 pb-10">
-            <div class="space-y-8">
-                <div class="bg-blue-50/50 rounded-4xl p-6 border border-blue-100/50">
-                    <div class="flex gap-4">
-                        <span class="material-symbols-outlined text-primary">info</span>
+
+        <div class="px-8 pb-8">
+            @if (!$enabled)
+                {{-- 2FA is not enabled --}}
+                <div class="space-y-6">
+                    <div class="bg-blue-50/50 rounded-3xl p-6 border border-blue-100/50 text-center">
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
-                            Use um aplicativo autenticador (como Google Authenticator ou Microsoft Authenticator) para escanear o código abaixo.
+                            A autenticação de dois fatores adiciona uma camada adicional de segurança à sua conta, exigindo um código de seis dígitos gerado pelo seu aplicativo autenticador.
                         </p>
                     </div>
+                    <button wire:click="enable" class="w-full py-4 bg-primary text-white rounded-pill font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.01] transition-all">
+                        Ativar Agora
+                    </button>
                 </div>
-                <div class="flex flex-col md:flex-row items-center gap-10">
-                    <div class="relative group">
-                        <div class="absolute inset-0 bg-primary/5 rounded-4xl scale-110 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div class="relative w-48 h-48 bg-white p-3 rounded-4xl border-2 border-slate-100 shadow-sm flex items-center justify-center">
-                            <img alt="QR Code 2FA" class="w-full h-full object-contain rounded-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB-H6EOHjSnWjVGsIjNr1bk8gQm-lAdgVlZgX3z72nwmF_AP1bHTcI-RlflVAxJokOQM8Qv07Kg4uXptkP6F4NoKlsUM8skxP8dZfTXQM1zK2PyLff34HTEJEYlojR1kh58VSl5qThvOtlkwGiQnO-2Xoedsg4Wk8OoWiiZDEyk4Mrue6_MEBfhg9GfgbqmPvkidjU-MQuOs5QUDNFuC6ti98wYP1txQNu-ZS6c5RAKBcAv7wsYXyjuCHxAV7woR2mgyXsEmRT2sc"/>
+            @elseif ($enabled && $showingConfirmation)
+                {{-- 2FA is enabled but needs confirmation --}}
+                <div class="space-y-6">
+                    <div class="text-center">
+                        <div class="inline-block p-4 bg-white border-2 border-slate-100 rounded-3xl mb-6">
+                            {!! auth()->user()->twoFactorQrCodeSvg() !!}
                         </div>
+                        <p class="text-sm text-slate-600 font-medium mb-6">
+                            Escaneie este código QR com o seu aplicativo autenticador e insira o código gerado para confirmar.
+                        </p>
                     </div>
-                    <div class="flex-1 space-y-4">
-                        <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-slate-800">Chave de Configuração</h4>
-                            <p class="text-xs text-slate-400 font-medium">Se não conseguir escanear, digite este código:</p>
-                        </div>
-                        <div class="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-2xl">
-                            <code class="flex-1 text-sm font-black text-primary tracking-widest text-center">ABCD 1234 EFGH 5678</code>
-                            <button class="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-primary transition-all">
-                                <span class="material-symbols-outlined text-lg">content_copy</span>
-                            </button>
-                        </div>
+
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Código de Confirmação</label>
+                        <input wire:model="code" class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="6" placeholder="000000"/>
+                        @error('code') <span class="text-red-500 text-[10px] font-bold block text-center mt-1">{{ $message }}</span> @enderror
                     </div>
-                </div>
-                <div class="space-y-4 pt-4 border-t border-slate-100">
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Código de Verificação</label>
-                        <p class="text-[11px] text-slate-400 font-medium mb-3">Insira o código de 6 dígitos gerado pelo seu app.</p>
-                        <div class="flex gap-3 justify-between">
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                            <input class="w-full h-14 bg-slate-50 border-slate-100 rounded-2xl text-center text-xl font-bold text-primary focus:ring-primary focus:border-primary focus:bg-white transition-all" maxlength="1" placeholder="-" type="text"/>
-                        </div>
+
+                    <div class="flex gap-4">
+                        <button wire:click="disable" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-pill transition-all">Cancelar</button>
+                        <button wire:click="confirm" class="flex-1 py-4 bg-primary text-white rounded-pill font-bold shadow-lg">Confirmar</button>
                     </div>
                 </div>
-            </div>
-            <div class="mt-10 flex gap-4">
-                <button wire:click="$parent.closeTwoFactorModal" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-pill transition-all">
-                    Voltar
-                </button>
-                <button class="flex-[2] py-4 bg-primary text-white rounded-pill text-sm font-bold shadow-lg shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">lock_open</span>
-                    Concluir Ativação
-                </button>
-            </div>
+            @elseif ($enabled && !$showingConfirmation)
+                {{-- 2FA is enabled and confirmed --}}
+                <div class="space-y-6">
+                    @if($showingRecoveryCodes)
+                        <div class="flex items-center gap-4 bg-green-50 p-6 rounded-3xl border border-green-100">
+                            <div class="w-12 h-12 bg-green-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-green-200">
+                                <span class="material-symbols-outlined text-2xl">check_circle</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-green-800">2FA Ativado!</h4>
+                                <p class="text-xs text-green-700/80 font-medium">Sua conta agora está protegida.</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center">Códigos de Recuperação</p>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                                @foreach (json_decode(decrypt(auth()->user()->two_factor_recovery_codes), true) as $recoveryCode)
+                                    <code class="text-xs text-slate-700 font-mono text-center">{{ $recoveryCode }}</code>
+                                @endforeach
+                            </div>
+                            <p class="text-[10px] text-slate-400 italic text-center leading-relaxed">
+                                Guarde estes códigos em um lugar seguro.
+                            </p>
+                        </div>
+                    @else
+                        <div class="bg-blue-50/50 rounded-3xl p-6 border border-blue-100/50 text-center">
+                            <p class="text-sm text-slate-600 leading-relaxed font-medium">
+                                A autenticação de dois fatores está atualmente <span class="text-primary font-bold">ativa</span> em sua conta.
+                            </p>
+                        </div>
+                    @endif
+
+                    <div class="flex gap-4">
+                        <button wire:click="regenerateRecoveryCodes" class="flex-1 py-4 bg-slate-50 text-slate-600 text-sm font-bold rounded-pill hover:bg-slate-100 transition-all border border-slate-200">Novos Códigos</button>
+                        <button wire:click="disable" class="flex-1 py-4 bg-red-50 text-red-600 text-sm font-bold rounded-pill hover:bg-red-600 hover:text-white transition-all border border-red-100">Desativar 2FA</button>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>
