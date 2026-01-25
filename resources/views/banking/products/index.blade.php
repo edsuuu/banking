@@ -1,6 +1,5 @@
 <x-app-layout>
     <flux:main>
-        <livewire:dashboard.index />
+        <livewire:products.index />
     </flux:main>
 </x-app-layout>
-

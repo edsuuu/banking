@@ -13,6 +13,15 @@ Route::middleware(['guest'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::view('/dashboard', 'banking.dashboard.index')->name('dashboard');
+    Route::view('/webhooks', 'banking.webhooks.index')->name('webhooks.index');
+    Route::view('/integrations', 'banking.integrations.index')->name('integrations.index');
+    Route::view('/settings', 'banking.settings.index')->name('settings.index');
+    Route::view('/withdrawals', 'banking.withdrawals.index')->name('withdrawals.index');
+    Route::view('/links', 'banking.links.index')->name('links.index');
+    Route::view('/invoices', 'banking.invoices.index')->name('invoices.index');
+    Route::view('/customers', 'banking.customers.index')->name('customers.index');
+    Route::view('/coupons', 'banking.coupons.index')->name('coupons.index');
+    Route::view('/products', 'banking.products.index')->name('products.index');
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
