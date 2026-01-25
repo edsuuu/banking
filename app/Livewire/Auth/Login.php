@@ -4,6 +4,7 @@ namespace App\Livewire\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -45,7 +46,7 @@ class Login extends Component
         try {
             $user = User::where('email', $this->email)->first();
 
-            if (! $user || ! \Illuminate\Support\Facades\Hash::check($this->password, $user->password)) {
+            if (! $user || ! Hash::check($this->password, $user->password)) {
                 RateLimiter::hit($this->throttleKey());
                 $this->addError('email', trans('auth.failed'));
 

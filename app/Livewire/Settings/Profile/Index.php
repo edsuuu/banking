@@ -61,19 +61,12 @@ class Index extends Component
         try {
             $user = Auth::user();
 
-            // Personal profile only allows CPF. 
-            // According to user request: "if it's cpf, only save the name" (and other non-document fields)
-            // But we will save the document too as it's a personal profile, 
-            // unless the user strictly meant to NOT save it.
-            // "validação se for cpf só salva o nome"
-
             $dataToUpdate = [
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
             ];
 
-            // If it's a CPF, we save it to the user's document field.
             $documentDigits = preg_replace('/[^0-9]/', '', $this->document);
             if (strlen($documentDigits) === 11) {
                 $dataToUpdate['document'] = $this->document;
@@ -98,7 +91,7 @@ class Index extends Component
         return [
             'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s]+$/u', 'regex:/^\S+\s+\S+.*$/'],
             'email' => 'required|email:dns,rfc|unique:users,email,' . Auth::id(),
-            'document' => 'required|string|cpf|unique:users,document,' . Auth::id(), // Restricted to CPF
+            'document' => 'required|string|cpf|unique:users,document,' . Auth::id(),
             'phone' => 'nullable|string|celular_com_ddd|unique:users,phone,' . Auth::id(),
         ];
     }

@@ -17,12 +17,6 @@ class TwoFactor extends Component
     public $showingRecoveryCodes = false;
     public $code;
 
-    /**
-     * Enable two factor authentication for the user.
-     *
-     * @param  \Laravel\Fortify\Actions\EnableTwoFactorAuthentication  $enable
-     * @return void
-     */
     public function enable(EnableTwoFactorAuthentication $enable)
     {
         $enable(Auth::user());
@@ -31,12 +25,6 @@ class TwoFactor extends Component
         $this->showingConfirmation = true;
     }
 
-    /**
-     * Confirm two factor authentication for the user.
-     *
-     * @param  \Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication  $confirm
-     * @return void
-     */
     public function confirm(ConfirmTwoFactorAuthentication $confirm)
     {
         $this->validate([
@@ -54,12 +42,6 @@ class TwoFactor extends Component
         }
     }
 
-    /**
-     * Disable two factor authentication for the user.
-     *
-     * @param  \Laravel\Fortify\Actions\DisableTwoFactorAuthentication  $disable
-     * @return void
-     */
     public function disable(DisableTwoFactorAuthentication $disable)
     {
         $disable(Auth::user());
@@ -68,16 +50,9 @@ class TwoFactor extends Component
         $this->showingConfirmation = false;
         $this->showingRecoveryCodes = false;
         
-        // Ensure the component state reflects the change
         $this->dispatch('two-factor-disabled');
     }
 
-    /**
-     * Generate new recovery codes for the user.
-     *
-     * @param  \Laravel\Fortify\Actions\GenerateNewRecoveryCodes  $generate
-     * @return void
-     */
     public function regenerateRecoveryCodes(GenerateNewRecoveryCodes $generate)
     {
         $generate(Auth::user());
@@ -89,7 +64,6 @@ class TwoFactor extends Component
     {
         $user = Auth::user()->fresh();
 
-        // If user started activation but didn't confirm, clean up the secret
         if ($user->two_factor_secret && ! $user->two_factor_confirmed_at) {
             $disable($user);
         }

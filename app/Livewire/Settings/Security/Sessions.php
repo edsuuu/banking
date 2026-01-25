@@ -17,8 +17,7 @@ class Sessions extends Component
     public $selectedSessions = [];
     public $selectAll = false;
     
-    // Custom Modal State
-    public $confirmingAction = null; // 'logout_selected', 'logout_single', 'logout_others'
+    public $confirmingAction = null;
     public $sessionToLogout = null;
     public $confirmationPassword = '';
 
@@ -51,27 +50,18 @@ class Sessions extends Component
         $this->showTwoFactorModal = false;
     }
 
-    /**
-     * Start confirmation for single session logout.
-     */
     public function confirmLogoutSingle($sessionId)
     {
         $this->sessionToLogout = $sessionId;
         $this->confirmingAction = 'logout_single';
     }
 
-    /**
-     * Start confirmation for bulk session logout.
-     */
     public function confirmLogoutSelected()
     {
         if (empty($this->selectedSessions)) return;
         $this->confirmingAction = 'logout_selected';
     }
 
-    /**
-     * Start the process of logging out other browser sessions (Requires Password).
-     */
     public function confirmLogoutOtherSessions()
     {
         $this->resetErrorBag();
@@ -79,9 +69,6 @@ class Sessions extends Component
         $this->confirmingAction = 'logout_others';
     }
 
-    /**
-     * Cancel any pending confirmation.
-     */
     public function cancelConfirmation()
     {
         $this->confirmingAction = null;
@@ -90,9 +77,6 @@ class Sessions extends Component
         $this->resetErrorBag();
     }
 
-    /**
-     * Execute the logout for single or selected sessions.
-     */
     public function executeLogout()
     {
         $ids = $this->confirmingAction === 'logout_single' ? [$this->sessionToLogout] : $this->selectedSessions;
@@ -105,7 +89,6 @@ class Sessions extends Component
         $currentSessionId = Session::getId();
         $shouldLogoutCurrent = in_array($currentSessionId, $ids);
 
-        // Delete records
         DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
             ->where('user_id', auth()->user()->getAuthIdentifier())
             ->whereIn('id', $ids)
@@ -126,9 +109,6 @@ class Sessions extends Component
         $this->dispatch('sessions-updated');
     }
 
-    /**
-     * Terminate all other sessions except current (Uses password logic).
-     */
     public function logoutOtherBrowserSessions()
     {
         $this->validate([
@@ -153,11 +133,6 @@ class Sessions extends Component
         $this->dispatch('sessions-updated');
     }
 
-    /**
-     * Delete the other browser session records from storage.
-     *
-     * @return void
-     */
     protected function deleteOtherSessionRecords()
     {
         if (config('session.driver') !== 'database') {
@@ -170,11 +145,6 @@ class Sessions extends Component
             ->delete();
     }
 
-    /**
-     * Get the current sessions.
-     *
-     * @return \Illuminate\Support\Collection
-     */
     public function getSessionsProperty()
     {
         if (config('session.driver') !== 'database') {
@@ -196,12 +166,6 @@ class Sessions extends Component
                 });
     }
 
-    /**
-     * Create a new agent instance from the given user agent.
-     *
-     * @param  string  $userAgent
-     * @return object
-     */
     protected function createAgent($userAgent)
     {
         $agent = tap(new Agent, fn ($agent) => $agent->setUserAgent($userAgent));

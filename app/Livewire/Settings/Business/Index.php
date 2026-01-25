@@ -12,13 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class Index extends Component
 {
-    // Business fields
     public $tax_id;
     public $company_type;
     public $legal_name;
     public $trading_name;
 
-    // Address fields
     public $zip_code;
     public $street;
     public $number;
@@ -157,7 +155,7 @@ class Index extends Component
     protected function rules()
     {
         return [
-            'tax_id' => 'required|string|cnpj', // Restricted to CNPJ
+            'tax_id' => 'required|string|cnpj',
             'legal_name' => 'required|string|max:255',
             'trading_name' => 'required|string|max:255',
             'zip_code' => 'required|string',

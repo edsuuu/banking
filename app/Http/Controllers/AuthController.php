@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -142,17 +143,27 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        $action = app(\Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication::class);
+        $action = app(ConfirmTwoFactorAuthentication::class);
 
         try {
             $action($user, $request->code);
 
             if ($user->two_factor_confirmed_at) {
                 session(['auth.password_confirmed_at' => time()]);
+
+                Log::channel('daily')->info('Sudo Mode: 2FA Confirmed', [
+                    'user_id' => $user->id,
+                    'ip' => $request->ip()
+                ]);
+
                 return redirect()->intended(route('settings.index'));
             }
         } catch (\Exception $e) {
-            // Fortify's action might throw exceptions on invalid code
+            Log::channel('daily')->error('Sudo Mode: 2FA Confirmation Error', [
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+                'ip' => $request->ip()
+            ]);
         }
 
         return redirect()->back()->withErrors(['code' => 'O código de autenticação informado é inválido.']);

@@ -99,20 +99,16 @@ class Register extends Component
         DB::beginTransaction();
 
         try {
-            // Get default plan
             $plan = Plan::query()->where('slug', 'starter')->first();
 
-            // Check if document is CNPJ or CPF
             $documentDigits = preg_replace('/[^0-9]/', '', $this->document);
             $isCnpj = strlen($documentDigits) === 14;
 
-            // Create Business
             $businessData = [
                 'plan_id' => $plan?->id,
                 'trading_name' => explode(' ', $this->name)[0] . ' Business',
             ];
 
-            // Only save document to business if it's a CNPJ
             if ($isCnpj) {
                 $businessData['tax_id'] = $this->document;
                 $businessData['legal_name'] = $this->name;
@@ -120,7 +116,6 @@ class Register extends Component
 
             $business = Business::query()->create($businessData);
 
-            // Prepare User Data
             $userData = [
                 'business_id' => $business->id,
                 'google_id' => $this->google_id,

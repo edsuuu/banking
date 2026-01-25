@@ -36,14 +36,10 @@ class Notifications extends Component
     public function updatedSettings($value, $key)
     {
         $business = Auth::user()->business;
-        // Chave específica por campo para detectar cliques repetidos no mesmo item
         $throttleKey = 'toggle-notifications-' . $business->id . '-' . $key;
 
-        // Limite de 5 cliques por campo a cada 20 segundos
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $this->isThrottled = true;
-
-            // Reverte o estado visual buscando do banco
             $this->settings = array_merge($this->settings, $business->notification_settings ?? []);
 
             $this->dispatch('notify', [
@@ -57,15 +53,29 @@ class Notifications extends Component
         $this->isThrottled = false;
         RateLimiter::hit($throttleKey, 20);
 
-        // Update the business settings
-        $business->update([
-            'notification_settings' => $this->settings
-        ]);
+        try {
+            $business->update([
+                'notification_settings' => $this->settings
+            ]);
 
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => 'Preferências de notificação atualizadas.'
-        ]);
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Preferências de notificação atualizadas.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::channel('daily')->error('Notification Update Error: ' . $e->getMessage(), [
+                'business_id' => $business->id,
+                'settings' => $this->settings,
+                'exception' => $e
+            ]);
+
+            $this->settings = array_merge($this->settings, $business->notification_settings ?? []);
+
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Não foi possível salvar suas preferências agora. Tente novamente mais tarde.'
+            ]);
+        }
     }
 
     public function render()
