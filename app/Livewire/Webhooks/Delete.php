@@ -3,22 +3,31 @@
 namespace App\Livewire\Webhooks;
 
 use Livewire\Component;
+use App\Models\BusinessWebhook;
+use Illuminate\Support\Facades\Auth;
 
 class Delete extends Component
 {
     public $webhookId;
 
-    public function mount($id)
+    public function mount($id = null)
     {
-        $this->webhookId = $id;
+        if ($id) {
+            $this->webhookId = $id;
+        }
     }
 
     public function delete()
     {
-        // Webhook::find($this->webhookId)->delete();
-        
+        $webhook = BusinessWebhook::where('business_id', Auth::user()->business_id)->find($this->webhookId);
+
+        if ($webhook) {
+            $webhook->delete();
+            $this->dispatch('webhook-updated'); // Refresh list
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Webhook removido com sucesso.']);
+        }
+
         $this->dispatch('closeModal');
-        $this->dispatch('webhook-deleted');
     }
 
     public function render()
