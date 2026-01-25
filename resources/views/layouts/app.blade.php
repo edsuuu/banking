@@ -21,6 +21,7 @@
         rel="stylesheet"
     />
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600&display=swap" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/mask@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @fluxAppearance
@@ -102,7 +103,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold truncate">{{ auth()->user()->name }}</p>
-                    <p class="text-[10px] text-slate-400 font-medium">Empresa LTDA</p>
+                    <p class="text-[10px] text-slate-400 font-medium">{{ auth()->user()->business?->trading_name ?? 'Personal' }}</p>
                 </div>
             </div>
         </div>

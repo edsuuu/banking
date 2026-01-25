@@ -8,6 +8,10 @@ Route::view('/', 'banking.welcome')->name('welcome');
 Route::middleware(['guest'])->group(function () {
     Route::view('/login', 'banking.auth.login')->name('login');
     Route::view('/register', 'banking.auth.register')->name('register');
+    
+    // Google Auth
+    Route::get('oauth2/google/redirect', [AuthController::class, 'googleRedirect'])->name('google.redirect');
+    Route::get('oauth2/google/callback', [AuthController::class, 'googleCallback'])->name('google.callback');
 });
 
 

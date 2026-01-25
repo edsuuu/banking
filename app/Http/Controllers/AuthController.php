@@ -4,101 +4,103 @@ namespace App\Http\Controllers;
 
 use App\Livewire\Actions\Logout;
 use App\Models\User;
-use App\Models\UserSpotify;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function spotifyAuth()
-    {
-        return Socialite::driver('spotify')
-            ->scopes([
-                'user-read-playback-state',
-                'user-modify-playback-state',
-                'user-read-currently-playing',
-                'playlist-read-private',
-                'playlist-read-collaborative',
-                'playlist-modify-private',
-                'playlist-modify-public',
-                'user-read-playback-position',
-                'user-top-read',
-                'user-read-recently-played',
-                'user-read-email',
-                'user-library-read',
-                'user-read-private',
-            ])
-            ->redirect();
-    }
-
-    public function spotifyCallback()
+    /**
+     * Redirect to Google for authentication.
+     */
+    public function googleRedirect()
     {
         try {
-            $spotifyUser = Socialite::driver('spotify')
-                ->stateless()
-                ->user();
-
-            DB::beginTransaction();
-
-            $userDB = User::query()
-                ->with('spotify')
-                ->where('email', $spotifyUser->user['email'])
-                ->where('spotify_id', $spotifyUser->user['id'])
-                ->first();
-
-            if (!isset($userDB)) {
-                $userCreate = User::query()->create([
-                    'name' => $spotifyUser->user['display_name'],
-                    'email' =>  $spotifyUser->user['email'],
-                    'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(16)),
-                    'spotify_id' => $spotifyUser->user['id'],
-                ]);
-
-                UserSpotify::query()->create([
-                    'user_id' => $userCreate->id,
-                    'external_urls' => $spotifyUser->user['external_urls']['spotify'],
-                    'href_profile' => $spotifyUser->user['href'],
-                    'product' => $spotifyUser->user['product'],
-                    'avatar' => !empty($spotifyUser->user['images']) ? $spotifyUser->user['images'][0]['url'] : null,
-                    'token' => $spotifyUser->token,
-                    'refresh_token' => $spotifyUser->refreshToken,
-                    'expires_token' => now()->addSeconds($spotifyUser->expiresIn),
-                    'country' => $spotifyUser->user['country'],
-                ]);
-
-                Auth::loginUsingId($userCreate->id, true);
-            } else {
-                UserSpotify::query()
-                    ->where('user_id', $userDB->id)
-                    ->update([
-                        'avatar' =>  !empty($spotifyUser->user['images']) ? $spotifyUser->user['images'][0]['url'] : null,
-                        'product' => $spotifyUser->user['product'],
-                        'token' => $spotifyUser->token,
-                        'refresh_token' => $spotifyUser->refreshToken,
-                        'expires_token' => now()->addSeconds($spotifyUser->expiresIn),
-                    ]);
-
-                Auth::login($userDB);
-            }
-
-            DB::commit();
-            session()->regenerate();
-            return redirect()->route('dashboard');
+            return Socialite::driver('google')->redirect();
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::channel('daily')->error($e);
-            return redirect('/')->with('error', 'Erro ao autenticar com o Spotify. Tente novamente.');
+            Log::channel('auth')->error('Google Redirect Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+            return redirect()->route('login')->withErrors(['error' => 'Não foi possível redirecionar para o Google.']);
         }
     }
 
+    /**
+     * Handle the Google callback.
+     */
+    public function googleCallback(): RedirectResponse
+    {
+        try {
+            $googleUser = Socialite::driver('google')
+                ->stateless()
+                ->user();
+
+            $user = User::query()
+                ->where('email', $googleUser->getEmail())
+                ->orWhere('google_id', $googleUser->getId())
+                ->first();
+
+            if ($user) {
+                // Update google_id if not set
+                if (empty($user->google_id)) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                }
+
+                // Check if user has business
+                if ($user->business_id) {
+                    Auth::login($user, true);
+                    return redirect()->intended(route('dashboard'));
+                }
+                
+                // Fallback to register if no business linked
+                session([
+                    'social_user' => [
+                        'google_id' => $googleUser->getId(),
+                        'name' => $googleUser->getName(),
+                        'email' => $googleUser->getEmail(),
+                        'provider' => 'google',
+                    ]
+                ]);
+                return redirect()->route('register');
+            }
+
+            // Redirect to register with google data if user doesn't exist
+            session([
+                'social_user' => [
+                    'google_id' => $googleUser->getId(),
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'provider' => 'google',
+                ]
+            ]);
+
+            return redirect()->route('register');
+
+        } catch (\Exception $e) {
+            Log::channel('auth')->error('Google Auth Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('login')->withErrors(['error' => 'Falha na autenticação com o Google. Tente novamente.']);
+        }
+    }
+
+    /**
+     * Logout the user.
+     */
     public function logout(Logout $logout)
     {
-        $logout();
+        try {
+            $logout();
+        } catch (\Exception $e) {
+            Log::channel('auth')->error('Logout Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+        }
+        
         return redirect('/');
     }
 }
