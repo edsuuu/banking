@@ -1,6 +1,6 @@
 <x-app-layout>
     <flux:main>
-        <livewire:dashboard.index />
+        <livewire:webhooks.index />
     </flux:main>
 </x-app-layout>
 
