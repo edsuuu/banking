@@ -16,8 +16,8 @@
         </div>
 
         <div class="px-8 pb-8">
-            @if (!$enabled)
-                {{-- 2FA is not enabled --}}
+            @if (!$confirmed && !$isPending)
+                {{-- 2FA is not enabled at all --}}
                 <div class="space-y-6">
                     <div class="bg-blue-50/50 rounded-3xl p-6 border border-blue-100/50 text-center">
                         <p class="text-sm text-slate-600 leading-relaxed font-medium">
@@ -28,8 +28,8 @@
                         Ativar Agora
                     </button>
                 </div>
-            @elseif ($enabled && $showingConfirmation)
-                {{-- 2FA is enabled but needs confirmation --}}
+            @elseif ($isPending)
+                {{-- 2FA is enabled in DB but needs confirmation code --}}
                 <div class="space-y-6">
                     <div class="text-center">
                         <div class="inline-block p-4 bg-white border-2 border-slate-100 rounded-3xl mb-6">
@@ -51,8 +51,8 @@
                         <button wire:click="confirm" class="flex-1 py-4 bg-primary text-white rounded-pill font-bold shadow-lg">Confirmar</button>
                     </div>
                 </div>
-            @elseif ($enabled && !$showingConfirmation)
-                {{-- 2FA is enabled and confirmed --}}
+            @elseif ($confirmed)
+                {{-- 2FA is fully enabled and confirmed --}}
                 <div class="space-y-6">
                     @if($showingRecoveryCodes)
                         <div class="flex items-center gap-4 bg-green-50 p-6 rounded-3xl border border-green-100">

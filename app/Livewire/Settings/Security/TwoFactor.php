@@ -85,18 +85,27 @@ class TwoFactor extends Component
         $this->showingRecoveryCodes = true;
     }
 
-    public function close()
+    public function close(DisableTwoFactorAuthentication $disable)
     {
+        $user = Auth::user()->fresh();
+
+        // If user started activation but didn't confirm, clean up the secret
+        if ($user->two_factor_secret && ! $user->two_factor_confirmed_at) {
+            $disable($user);
+        }
+
         $this->dispatch('close-two-factor-modal');
     }
 
     public function render()
     {
         $user = Auth::user()->fresh();
+        $confirmed = $user->two_factor_confirmed_at !== null;
 
         return view('livewire.settings.security.two-factor', [
             'enabled' => $user->two_factor_secret !== null,
-            'confirmed' => $user->two_factor_confirmed_at !== null,
+            'confirmed' => $confirmed,
+            'isPending' => $user->two_factor_secret !== null && ! $confirmed,
         ]);
     }
 }

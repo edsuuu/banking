@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -14,6 +15,11 @@ class Business extends Model
         'company_type',
         'legal_name',
         'trading_name',
+        'notification_settings',
+    ];
+
+    protected $casts = [
+        'notification_settings' => 'array',
     ];
 
     public function users(): HasMany
@@ -29,5 +35,10 @@ class Business extends Model
     public function primaryAddress(): HasOne
     {
         return $this->hasOne(Address::class)->where('is_primary', true);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
     }
 }

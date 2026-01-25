@@ -101,6 +101,6 @@
         </div>
     </div>
     <div class="mt-8 px-6 text-center">
-        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2024 FinPay Blue Ecosystem • Protegido por criptografia de ponta a ponta</p>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2024 FinPay Blue</p>
     </div>
 </div>
