@@ -1,0 +1,29 @@
+name: Auto Create PR
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Attempting to create PR for branch: ${{ github.ref_name }}"
+          gh pr create \
+            --base main \
+            --head "${{ github.ref_name }}" \
+            --title "Auto PR: ${{ github.ref_name }}" \
+            --body "Automated Pull Request created from push to branch **${{ github.ref_name }}**." \
+            || echo "PR creation skipped (likely already exists)."

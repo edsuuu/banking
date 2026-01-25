@@ -36,39 +36,39 @@
             <span class="text-2xl font-extrabold tracking-tight text-primary">FinPay</span>
         </div>
 <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('dashboard') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('dashboard') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('dashboard') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">grid_view</span>
                 <span class="text-sm font-semibold">Dashboard</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('products.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('products.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('products.index') }}">
                 <span
                     class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">inventory_2</span>
                 <span class="text-sm font-semibold">Produtos</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('coupons.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('coupons.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('coupons.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">sell</span>
                 <span class="text-sm font-semibold">Cupons</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('customers.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('customers.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('customers.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">group</span>
                 <span class="text-sm font-semibold">Clientes</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('invoices.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('invoices.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('invoices.index') }}">
                 <span
                     class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">description</span>
                 <span class="text-sm font-semibold">Cobranças</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('links.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('links.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('links.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">link</span>
                 <span class="text-sm font-semibold">Links</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('withdrawals.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('withdrawals.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('withdrawals.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">account_balance_wallet</span>
                 <span class="text-sm font-semibold">Saques</span>
@@ -76,18 +76,18 @@
             <div class="py-4">
                 <hr class="border-slate-200 mx-4"/>
             </div>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('settings.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('settings.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('settings.index') }}">
                 <span
                     class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">settings</span>
                 <span class="text-sm font-semibold">Configurações</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('integrations.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('integrations.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('integrations.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">integration_instructions</span>
                 <span class="text-sm font-semibold">Integrações</span>
             </a>
-            <a class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('webhooks.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('webhooks.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('webhooks.index') }}">
                 <span
                     class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">webhook</span>
