@@ -30,14 +30,18 @@
                     @error('name') <span class="text-red-500 text-[10px] font-bold ml-1">{{ $message }}</span> @enderror
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail Principal</label>
-                    <input wire:model="email" :disabled="!isEditing" :class="!isEditing ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'" class="w-full border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-primary focus:border-primary transition-all" type="email"/>
-                    @error('email') <span class="text-red-500 text-[10px] font-bold ml-1">{{ $message }}</span> @enderror
+                    <div class="flex items-center gap-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">E-mail Principal</label>
+                        <span class="material-symbols-outlined text-[10px] text-slate-400">lock</span>
+                    </div>
+                    <input wire:model="email" disabled class="w-full bg-slate-100 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-500 cursor-not-allowed" type="email"/>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">CPF</label>
-                    <input wire:model="document" x-mask="999.999.999-99" :disabled="!isEditing" :class="!isEditing ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'" class="w-full border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-700 focus:ring-primary focus:border-primary transition-all" type="text"/>
-                    @error('document') <span class="text-red-500 text-[10px] font-bold ml-1">{{ $message }}</span> @enderror
+                    <div class="flex items-center gap-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">CPF</label>
+                        <span class="material-symbols-outlined text-[10px] text-slate-400">lock</span>
+                    </div>
+                    <input wire:model="document" x-mask="999.999.999-99" disabled class="w-full bg-slate-100 border-slate-100 rounded-2xl px-5 py-3.5 text-sm font-semibold text-slate-500 cursor-not-allowed" type="text"/>
                 </div>
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Telefone / WhatsApp</label>
