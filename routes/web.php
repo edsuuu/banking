@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileController;
 
 Route::view('/', 'banking.welcome')->name('welcome');
 
@@ -26,7 +27,12 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/invoices', 'banking.invoices.index')->name('invoices.index');
     Route::view('/customers', 'banking.customers.index')->name('customers.index');
     Route::view('/coupons', 'banking.coupons.index')->name('coupons.index');
-    Route::view('/products', 'banking.products.index')->name('products.index');
+    Route::prefix('produtos')->name('products.')->group(function () {
+        Route::view('/', 'banking.products.index')->name('index');
+        Route::view('/novo', 'banking.products.create')->name('create');
+        Route::view('/{product}/editar', 'banking.products.edit')->name('edit');
+    });
+    Route::get('/files/{uuid}', [FileController::class, 'show'])->name('files.show');
 });
 
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');

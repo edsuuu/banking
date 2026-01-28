@@ -30,12 +30,12 @@
                         <div class="flex items-center gap-3">
                             <div class="relative">
                                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                                <input class="pl-11 pr-6 py-3 bg-slate-50 border-transparent focus:border-primary focus:ring-0 rounded-full w-64 text-sm font-medium placeholder:text-slate-400 transition-all" placeholder="Buscar produto..." type="text"/>
+                                <input wire:model.live.debounce.300ms="search" class="pl-11 pr-6 py-3 bg-slate-50 border-transparent focus:border-primary focus:ring-0 rounded-full w-64 text-sm font-medium placeholder:text-slate-400 transition-all" placeholder="Buscar produto..." type="text"/>
                             </div>
-                            <button class="flex items-center gap-2 px-6 py-3 gradient-blue text-white rounded-full font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">
+                            <a href="{{ route('products.create') }}" wire:navigate class="flex items-center gap-2 px-6 py-3 gradient-blue text-white rounded-full font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">
                                 <span class="material-symbols-outlined text-lg">add</span>
                                 Novo Produto
-                            </button>
+                            </a>
                         </div>
                     </div>
                     <div class="bg-white">
@@ -44,169 +44,63 @@
                             <tr class="text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 <th class="px-6 pb-4">Produto</th>
                                 <th class="px-6 pb-4">Preço</th>
-                                <th class="px-6 pb-4">Vendas</th>
-                                <th class="px-6 pb-4">Receita</th>
                                 <th class="px-6 pb-4">Status</th>
                                 <th class="px-6 pb-4 text-center">Ações</th>
                             </tr>
                             </thead>
                             <tbody class="space-y-4">
+                            @forelse($products as $product)
                             <tr class="group hover:bg-slate-50 transition-all">
                                 <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-l-4xl border-y border-l border-transparent group-hover:border-blue-100">
                                     <div class="flex items-center gap-4">
                                         <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-slate-100 overflow-hidden">
-                                            <span class="material-symbols-outlined text-2xl fill-icon">movie</span>
+                                            @if($product->image)
+                                                <img src="{{ route('files.show', $product->image->uuid) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                            @else
+                                                <span class="material-symbols-outlined text-2xl fill-icon">inventory_2</span>
+                                            @endif
                                         </div>
                                         <div>
-                                            <p class="font-bold text-slate-800">Curso: Design para Devs</p>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Infoproduto</p>
+                                            <p class="font-bold text-slate-800">{{ $product->name }}</p>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{{ ucfirst(optional($product->category)->name) }}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-slate-800">R$ 497,00</p>
+                                    <p class="font-black text-slate-800">R$ {{ number_format($product->price, 2, ',', '.') }}</p>
                                 </td>
                                 <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-bold text-slate-600">1.240</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-blue-600">R$ 616.280</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-black uppercase">Ativo</span>
+                                    <span @class([
+                                        'px-3 py-1 rounded-full text-[10px] font-black uppercase',
+                                        'bg-green-100 text-green-600' => $product->status === 'active',
+                                        'bg-amber-100 text-amber-600' => $product->status === 'paused',
+                                    ])>
+                                        {{ $product->status === 'active' ? 'Ativo' : 'Pausado' }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-r-4xl border-y border-r border-transparent group-hover:border-blue-100 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
+                                        <a href="{{ route('products.edit', $product->id) }}" wire:navigate class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
                                             <span class="material-symbols-outlined text-xl">edit</span>
-                                        </button>
+                                        </a>
                                         <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
                                             <span class="material-symbols-outlined text-xl">link</span>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
-                            <tr class="group hover:bg-slate-50 transition-all">
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-l-4xl border-y border-l border-transparent group-hover:border-blue-100">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-slate-100 overflow-hidden">
-                                            <span class="material-symbols-outlined text-2xl fill-icon">diamond</span>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-slate-800">Mentoria VIP Mensal</p>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Serviço</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-slate-800">R$ 2.500,00</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-bold text-slate-600">45</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-blue-600">R$ 112.500</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-black uppercase">Ativo</span>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-r-4xl border-y border-r border-transparent group-hover:border-blue-100 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">edit</span>
-                                        </button>
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">link</span>
-                                        </button>
-                                    </div>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-10 text-slate-400">
+                                    Nenhum produto encontrado.
                                 </td>
                             </tr>
-                            <tr class="group hover:bg-slate-50 transition-all">
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-l-4xl border-y border-l border-transparent group-hover:border-blue-100">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-slate-100 overflow-hidden">
-                                            <span class="material-symbols-outlined text-2xl fill-icon">diamond</span>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-slate-800">Mentoria VIP Mensal</p>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Serviço</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-slate-800">R$ 2.500,00</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-bold text-slate-600">45</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-blue-600">R$ 112.500</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-[10px] font-black uppercase">Ativo</span>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-r-4xl border-y border-r border-transparent group-hover:border-blue-100 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">edit</span>
-                                        </button>
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">link</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr class="group hover:bg-slate-50 transition-all">
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-l-4xl border-y border-l border-transparent group-hover:border-blue-100">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm border border-slate-100 overflow-hidden">
-                                            <span class="material-symbols-outlined text-2xl fill-icon">auto_stories</span>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-slate-800">Ebook: Marketing de Elite</p>
-                                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Infoproduto</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-slate-800">R$ 97,00</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-bold text-slate-600">3.412</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <p class="font-black text-blue-600">R$ 330.964</p>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 border-y border-transparent group-hover:border-blue-100">
-                                    <span class="px-3 py-1 bg-amber-100 text-amber-600 rounded-full text-[10px] font-black uppercase">Pausado</span>
-                                </td>
-                                <td class="px-6 py-5 bg-slate-50 group-hover:bg-blue-50/50 rounded-r-4xl border-y border-r border-transparent group-hover:border-blue-100 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">edit</span>
-                                        </button>
-                                        <button class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-white rounded-full transition-all border border-transparent hover:border-slate-200">
-                                            <span class="material-symbols-outlined text-xl">link</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            @endforelse
                             </tbody>
                         </table>
                     </div>
-                    <div class="flex items-center justify-between mt-10 px-6">
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Mostrando 3 de 12 produtos</p>
-                        <div class="flex items-center gap-2">
-                            <button class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-full hover:border-primary hover:text-primary transition-all">
-                                <span class="material-symbols-outlined">chevron_left</span>
-                            </button>
-                            <button class="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-full shadow-md shadow-blue-500/20 font-bold text-xs">1</button>
-                            <button class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-600 rounded-full font-bold text-xs hover:border-primary hover:text-primary transition-all">2</button>
-                            <button class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-600 rounded-full font-bold text-xs hover:border-primary hover:text-primary transition-all">3</button>
-                            <button class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 text-slate-400 rounded-full hover:border-primary hover:text-primary transition-all">
-                                <span class="material-symbols-outlined">chevron_right</span>
-                            </button>
-                        </div>
+                    <div class="mt-10 px-6">
+                        {{ $products->links() }}
                     </div>
                 </div>
             </div>

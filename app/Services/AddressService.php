@@ -2,11 +2,16 @@
 
 namespace App\Services;
 
+use App\Services\Integration\BrasilAPIService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class AddressService
 {
+    public function __construct(
+        protected BrasilAPIService $brasilAPI
+    ) {}
+
     /**
      * Handle the ZIP code lookup with fallback logic.
      *
@@ -43,37 +48,29 @@ class AddressService
      */
     protected function lookupBrazilApi(string $zipCode): array|false
     {
-        try {
-            $response = Http::get("https://brasilapi.com.br/api/cep/v1/{$zipCode}");
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                return [
-                    'zip_code' => $data['cep'],
-                    'street' => $data['street'] ?? null,
-                    'neighborhood' => $data['neighborhood'] ?? null,
-                    'city' => $data['city'] ?? null,
-                    'state' => $data['state'] ?? null,
-                ];
-            }
-        } catch (\Exception $e) {
-            Log::channel('daily')->warning('BrazilAPI Error: ' . $e->getMessage(), [
-                'zip_code' => $zipCode,
-                'exception' => $e
-            ]);
+        $data = $this->brasilAPI->getCep($zipCode);
+
+        if ($data) {
+            return [
+                'zip_code' => $data['cep'],
+                'street' => $data['street'] ?? null,
+                'neighborhood' => $data['neighborhood'] ?? null,
+                'city' => $data['city'] ?? null,
+                'state' => $data['state'] ?? null,
+            ];
         }
 
         return false;
     }
 
     /**
-     * Lookup address using ViaCEP.
+     * Lookup address using ViaCEP (fallback).
      */
     protected function lookupViaCep(string $zipCode): array|false
     {
         try {
             $response = Http::get("https://viacep.com.br/ws/{$zipCode}/json/");
-            
+
             if ($response->successful() && !isset($response->json()['erro'])) {
                 $data = $response->json();
                 return [
@@ -87,7 +84,7 @@ class AddressService
         } catch (\Exception $e) {
             Log::channel('daily')->error('ViaCEP Error: ' . $e->getMessage(), [
                 'zip_code' => $zipCode,
-                'exception' => $e
+                'exception' => $e,
             ]);
         }
 

@@ -43,10 +43,23 @@
     <div class="flex items-center gap-4">
         @auth
             <flux:dropdown position="top" align="end">
-                <flux:profile circle :name="auth()->user()->name" class="cursor-pointer"/>
+                <flux:profile circle :name="auth()->user()->name" class="cursor-pointer !text-zinc-700"/>
                 <flux:menu>
                     <flux:menu.item :href="route('dashboard')" wire:navigate icon="musical-note" class="cursor-pointer">Dashboard</flux:menu.item>
                     <flux:menu.separator />
+                    
+                        <flux:menu.radio.group>
+                        <div class="px-1 py-1.5">
+                            <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
+                                <flux:radio value="light" icon="sun" class="cursor-pointer"/>
+                                <flux:radio value="dark" icon="moon" class="cursor-pointer"/>
+                                <flux:radio value="system" icon="computer-desktop" class="cursor-pointer"/>
+                            </flux:radio.group>
+                        </div>
+                    </flux:menu.radio.group>
+                    
+                    <flux:menu.separator />
+                    
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <flux:menu.item type="submit" icon="arrow-right-start-on-rectangle" class="cursor-pointer">Sair</flux:menu.item>
@@ -61,23 +74,6 @@
                 Criar Conta Grátis
             </a>
         @endauth
-
-        <div class="ml-4">
-             <flux:dropdown position="top" align="end">
-                <flux:button icon="sun" variant="subtle" class="rounded-full w-10 h-10 bg-slate-50 border border-slate-100" />
-                 <flux:menu>
-                    <flux:menu.radio.group>
-                        <div class="px-1 py-1.5">
-                            <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
-                                <flux:radio value="light" icon="sun" class="cursor-pointer"/>
-                                <flux:radio value="dark" icon="moon" class="cursor-pointer"/>
-                                <flux:radio value="system" icon="computer-desktop" class="cursor-pointer"/>
-                            </flux:radio.group>
-                        </div>
-                    </flux:menu.radio.group>
-                </flux:menu>
-            </flux:dropdown>
-        </div>
     </div>
 </flux:header>
 

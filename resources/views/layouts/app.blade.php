@@ -83,11 +83,11 @@
                     class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">settings</span>
                 <span class="text-sm font-semibold">Configurações</span>
             </a>
-            <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('integrations.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
+            {{-- <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('integrations.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('integrations.index') }}">
                 <span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">integration_instructions</span>
                 <span class="text-sm font-semibold">Integrações</span>
-            </a>
+            </a> --}}
             <a wire:navigate class="flex items-center gap-4 px-5 py-3.5 rounded-3xl transition-all {{ request()->routeIs('webhooks.index') ? 'bg-primary text-white font-semibold shadow-blue-500/10 sidebar-item-active' : 'text-slate-500 hover:bg-white group' }}"
                href="{{ route('webhooks.index') }}">
                 <span
@@ -95,21 +95,39 @@
                 <span class="text-sm font-semibold">Webhooks</span>
             </a>
         </nav>
-        <div class="px-4 mt-auto mb-6">
-            <div class="flex items-center gap-3 p-3 bg-white rounded-3xl shadow-sm border border-slate-100">
-                <div class="w-10 h-10 rounded-full gradient-blue flex items-center justify-center text-white font-bold text-xs shrink-0">
+        <div class="mt-auto mb-6">
+            <div class="flex items-center gap-3 p-4 bg-white rounded-3xl shadow-[0_2px_15px_rgba(0,0,0,0.05)] border border-slate-50 relative group">
+                <div class="w-10 h-10 rounded-2xl gradient-blue flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
                     {{ auth()->user() ? collect(explode(' ', auth()->user()->name))->map(fn($n) => mb_substr($n, 0, 1))->take(2)->join('') : '??' }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-[11px] font-bold truncate text-slate-800">{{ auth()->user()->name ?? 'Usuário' }}</p>
-                    <p class="text-[9px] text-slate-400 font-medium truncate">{{ auth()->user()?->business?->trading_name ?? 'Personal' }}</p>
+                    <p class="text-xs font-bold truncate text-slate-800">{{ auth()->user()->name ?? 'Usuário' }}</p>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">{{ auth()->user()?->business?->trading_name ?? 'Personal' }}</p>
                 </div>
-                <form method="POST" action="{{ route('logout') }}" x-data>
-                    @csrf
-                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all group" title="Sair do sistema">
-                        <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">logout</span>
-                    </button>
-                </form>
+                
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                <button @click="open = !open" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-xl">more_vert</span>
+                </button>
+
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-2"
+                         class="absolute bottom-[calc(100%+1rem)] right-0 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-1.5 z-50">
+                    
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                            <button type="submit" class="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer group/logout">
+                            <span class="material-symbols-outlined text-lg group-hover/logout:scale-110 transition-transform">logout</span>
+                            Sair da Conta
+                        </button>
+                    </form>
+                </div>
+            </div>
             </div>
         </div>
 </flux:sidebar>
