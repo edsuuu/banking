@@ -41,4 +41,19 @@ class Business extends Model
     {
         return $this->belongsTo(Plan::class);
     }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(BankAccount::class);
+    }
+
+    public function activeBankAccount(): HasOne
+    {
+        return $this->hasOne(BankAccount::class)->where('is_active', true);
+    }
 }

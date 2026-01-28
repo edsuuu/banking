@@ -1,6 +1,6 @@
 import './bootstrap';
 
-window.maskPhoneNumber = function(value) {
+window.maskPhoneNumber = function (value) {
     return value.replace(/[^0-9]/g, '').length > 10 ? '(99) 99999-9999' : '(99) 9999-9999';
 }
 
@@ -12,7 +12,7 @@ window.addEventListener('open-document', (event) => {
     link.click();
 });
 
-window.documentMask = function(value) {
+window.documentMask = function (value) {
     const cleanValue = value.toString().replace(/[^\d]/g, '');
 
     const limitedValue = cleanValue.slice(0, 14);
@@ -42,7 +42,7 @@ window.documentMask = function(value) {
     }
 }
 
-window.moneyMask = function(value,maxIntegers) {
+window.moneyMask = function (value, maxIntegers) {
     if (value || Number.isInteger(value)) {
         const cleanValue = value.toString().replace(/[^\d]/g, '');
 
@@ -53,4 +53,17 @@ window.moneyMask = function(value,maxIntegers) {
             .replace(/(?=(\d{3})+(\D))\B/g, '.');
     }
     return '';
+}
+
+window.uuidMask = function (value) {
+    const cleanValue = value.replace(/[^a-fA-F0-9]/g, '').toLowerCase().slice(0, 32);
+
+    let result = '';
+    for (let i = 0; i < cleanValue.length; i++) {
+        if (i === 8 || i === 12 || i === 16 || i === 20) {
+            result += '-';
+        }
+        result += cleanValue[i];
+    }
+    return result;
 }
